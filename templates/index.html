@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SegFormer Image Segmentation</title>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #17a2b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-container {
+            background: rgba(255,255,255,0.9);
+            padding: 25px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #138496;
+        }
+
+        /* ✅ Images horizontal */
+        .results {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .results div {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            width: 320px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        p {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* ✅ Legend horizontal card */
+        .legend-card {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-box {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: 1px solid #000;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <h1>SegFormer Image Segmentation</h1>
+
+    <div class="upload-container">
+        <input type="file" id="imageInput" accept="image/*">
+        <br><br>
+        <button onclick="uploadImage()">Segment Image</button>
+    </div>
+
+    <!-- ✅ Horizontal images -->
+    <div class="results" id="results" style="display:none;">
+        <div>
+            <p>Original Image</p>
+            <img id="originalImg">
+        </div>
+
+        <div>
+            <p>Segmentation Mask</p>
+            <img id="maskImg">
+        </div>
+
+        <div>
+            <p>Overlay</p>
+            <img id="overlayImg">
+        </div>
+    </div>
+
+    <!-- ✅ Horizontal legend -->
+    <div id="legendContainer" style="display:none; text-align:center;">
+        <div class="legend-card" id="legend"></div>
+    </div>
+
+<script>
+    async function uploadImage() {
+        const input = document.getElementById('imageInput');
+        if (!input.files[0]) {
+            alert("Please select an image.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        const response = await fetch('/segment', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        // Show images
+        document.getElementById('originalImg').src = 'data:image/png;base64,' + data.original;
+        document.getElementById('maskImg').src = 'data:image/png;base64,' + data.mask;
+        document.getElementById('overlayImg').src = 'data:image/png;base64,' + data.overlay;
+        document.getElementById('results').style.display = 'flex';
+
+        // Build legend horizontally
+        const legendDiv = document.getElementById('legend');
+        legendDiv.innerHTML = "";
+
+        for (const [label, color] of Object.entries(data.legend)) {
+            const item = document.createElement("div");
+            item.className = "legend-item";
+
+            const box = document.createElement("div");
+            box.className = "color-box";
+            box.style.background = color;
+
+            const text = document.createElement("span");
+            text.innerText = label;
+
+            item.appendChild(box);
+            item.appendChild(text);
+            legendDiv.appendChild(item);
+        }
+
+        document.getElementById('legendContainer').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
