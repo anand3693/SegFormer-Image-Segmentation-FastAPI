@@ -41,7 +41,6 @@
             background: #138496;
         }
 
-        /* ✅ Images horizontal */
         .results {
             display: flex;
             justify-content: center;
@@ -68,7 +67,6 @@
             margin-bottom: 8px;
         }
 
-        /* ✅ Legend horizontal card */
         .legend-card {
             display: inline-flex;
             flex-wrap: wrap;
@@ -107,7 +105,6 @@
         <button onclick="uploadImage()">Segment Image</button>
     </div>
 
-    <!-- ✅ Horizontal images -->
     <div class="results" id="results" style="display:none;">
         <div>
             <p>Original Image</p>
@@ -125,7 +122,6 @@
         </div>
     </div>
 
-    <!-- ✅ Horizontal legend -->
     <div id="legendContainer" style="display:none; text-align:center;">
         <div class="legend-card" id="legend"></div>
     </div>
@@ -148,13 +144,11 @@
 
         const data = await response.json();
 
-        // Show images
         document.getElementById('originalImg').src = 'data:image/png;base64,' + data.original;
         document.getElementById('maskImg').src = 'data:image/png;base64,' + data.mask;
         document.getElementById('overlayImg').src = 'data:image/png;base64,' + data.overlay;
         document.getElementById('results').style.display = 'flex';
 
-        // Build legend horizontally
         const legendDiv = document.getElementById('legend');
         legendDiv.innerHTML = "";
 
