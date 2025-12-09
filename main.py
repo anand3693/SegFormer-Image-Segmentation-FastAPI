@@ -41,7 +41,7 @@ async def segment_image(file: UploadFile = File(...)):
         mask = np.array(r["mask"], dtype=bool)
 
         if label not in class_colors:
-            class_colors[label] = np.random.rand(3)  # RGB
+            class_colors[label] = np.random.rand(3) 
 
         overlay[mask] = class_colors[label]
 
