@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Load SegFormer model once at startup
 segformer = pipeline(
     "image-segmentation",
     model="nvidia/segformer-b5-finetuned-cityscapes-1024-1024"
@@ -23,9 +22,6 @@ def fig_to_base64(fig):
     buf.seek(0)
     return base64.b64encode(buf.read()).decode('utf-8')
 
-# --------------------------
-# Route to serve frontend
-# --------------------------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -35,7 +31,6 @@ async def segment_image(file: UploadFile = File(...)):
     image = Image.open(file.file).convert("RGB")
     width, height = image.size
 
-    # Run segmentation
     results = segformer(image)
 
     overlay = np.zeros((height, width, 3), dtype=np.float32)
@@ -50,33 +45,23 @@ async def segment_image(file: UploadFile = File(...)):
 
         overlay[mask] = class_colors[label]
 
-    # Convert overlay colors from 0-1 to 0-255 for web display
     class_colors_hex = {label: "#{:02x}{:02x}{:02x}".format(
         int(c[0]*255), int(c[1]*255), int(c[2]*255))
         for label, c in class_colors.items()
     }
 
-    # -------------------------------
-    # Original Image → Base64
-    # -------------------------------
     fig1 = plt.figure(figsize=(width/100, height/100), dpi=100)
     plt.imshow(image)
     plt.axis("off")
     img1 = fig_to_base64(fig1)
     plt.close(fig1)
 
-    # -------------------------------
-    # Pure Mask → Base64
-    # -------------------------------
     fig2 = plt.figure(figsize=(width/100, height/100), dpi=100)
     plt.imshow(overlay)
     plt.axis("off")
     img2 = fig_to_base64(fig2)
     plt.close(fig2)
 
-    # -------------------------------
-    # Overlay → Base64
-    # -------------------------------
     fig3, ax = plt.subplots(figsize=(width/100, height/100), dpi=100)
     ax.imshow(image)
     ax.imshow(overlay, alpha=0.5)
@@ -88,5 +73,5 @@ async def segment_image(file: UploadFile = File(...)):
         "original": img1,
         "mask": img2,
         "overlay": img3,
-        "legend": class_colors_hex  # send legend separately
+        "legend": class_colors_hex 
     })
